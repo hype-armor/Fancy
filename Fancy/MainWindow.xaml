@@ -29,8 +29,8 @@
             <Label Content="100%" FontSize="10" Foreground="White" HorizontalContentAlignment="Center" Margin="0,115,18,0" Name="lblRAM" VerticalAlignment="Top" VerticalContentAlignment="Center" HorizontalAlignment="Right" Height="12" Width="26" Padding="0" />
             <Label Content="↑ 999K" FontSize="10" Foreground="White" HorizontalContentAlignment="Center" Margin="5,140,61,-6" Name="lblOut" VerticalContentAlignment="Center" Padding="0" Height="13" VerticalAlignment="Top" />
             <Label Content="↓ 999K" FontSize="10" Foreground="White" HorizontalContentAlignment="Center" Margin="61,140,4,-6" Name="lblIn" VerticalAlignment="Top" VerticalContentAlignment="Center" Padding="0" />
-            <Label x:Name="CPUUsageDots" Content="•••••" HorizontalContentAlignment="Center" Margin="11,102,67,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF35B5E5" FontSize="16" Height="17" />
-            <Label x:Name="RAMUsageDots" Content="•••••" HorizontalContentAlignment="Center" Margin="66,102,0,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF35B5E5" FontSize="16" Height="17" HorizontalAlignment="Left" Width="43" />
+            <Label x:Name="CPUUsageDots" Content="•••••" Opacity="0.8" HorizontalContentAlignment="Center" Margin="11,102,67,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF4DBFD9" FontSize="16" Height="17" />
+            <Label x:Name="RAMUsageDots" Content="•••••" Opacity="0.8" HorizontalContentAlignment="Center" Margin="66,102,0,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF4DBFD9" FontSize="16" Height="17" HorizontalAlignment="Left" Width="43" />
         </Grid>
     </Border>
 </Window>

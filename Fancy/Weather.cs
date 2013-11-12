@@ -1,13 +1,14 @@
-﻿using System;
+﻿using ExtensionMethods;
+using System;
 using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Xml;
-using ExtensionMethods;
-using System.IO;
-using System.Drawing;
+using System.Windows;
 using System.Windows.Media.Imaging;
+using System.Xml;
 
 class Weather
 {
@@ -147,8 +148,9 @@ class Weather
 				return toBitmap(byteArrayToImage(WebPage));
 			}
 		}
-		catch
+		catch (WebException e)
 		{
+            MessageBox.Show(e.Message, "GetIcon", MessageBoxButton.OK, MessageBoxImage.Error);
 			return null;
 		} 
 
@@ -157,6 +159,7 @@ class Weather
 	private static string CleanCondition(string condition)
 	{
 		condition = condition.Replace(' ', '_');
+        condition = condition.Contains("Drizz") || condition.Contains("Showers") ? "rain" : condition;
 		condition = condition.Contains("Mostly") ? condition.Replace("Mostly", "Partly") : condition;
 		condition = condition.Contains("/") ? condition.Split(new char[] { '/' })[1] : condition;
 		return condition;

@@ -1,24 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Threading.Tasks;
-using System.Windows.Threading;
-using System.Globalization;
-using System.Threading;
-using System.Net;
-using System.Drawing;
+﻿using Microsoft.VisualBasic.Devices;
+using System;
 using System.Diagnostics;
-using Microsoft.VisualBasic.Devices;
 using System.Net.NetworkInformation;
+using System.Threading;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Input;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace Fancy
 {
@@ -123,7 +112,7 @@ namespace Fancy
                     catch (Exception e)
                     {
                         MessageBox.Show(e.Message, "Weather", MessageBoxButton.OK, MessageBoxImage.Error);
-                        continue;
+                        Thread.Sleep(10000);
                     }
                 }
             });
@@ -133,13 +122,23 @@ namespace Fancy
         {
             Task.Factory.StartNew(() =>
             {
-                Time time = new Time();
-                CurrentTime = DateTime.Now.ToString("t");
                 while (true)
                 {
-                    CurrentTime = time.Now;
-
-                    Thread.Sleep(30000);
+                    try
+                    {
+                        DateTime ComputerTime = DateTime.Now;
+                        DateTime ServerTime = new Time().Now;
+                        for (int i = 0; i < 900; i++)
+                        {
+                            CurrentTime = DateTime.Now.Add(ServerTime - ComputerTime).ToString("t");
+                            Thread.Sleep(1000);
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        MessageBox.Show(e.Message, "Time", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Thread.Sleep(10000);
+                    }
                 }
             });
         }
@@ -148,25 +147,25 @@ namespace Fancy
         {
             Task.Factory.StartNew(() =>
             {
-                try
+                PerformanceCounter cpuCounter = new PerformanceCounter();
+                cpuCounter.CategoryName = "Processor";
+                cpuCounter.CounterName = "% Processor Time";
+                cpuCounter.InstanceName = "_Total";
+                cpuCounter.NextValue();
+                Thread.Sleep(20);
+                cpu = cpuCounter.NextValue();
+                while (true)
                 {
-                    PerformanceCounter cpuCounter = new PerformanceCounter();
-                    cpuCounter.CategoryName = "Processor";
-                    cpuCounter.CounterName = "% Processor Time";
-                    cpuCounter.InstanceName = "_Total";
-                    cpuCounter.NextValue();
-                    Thread.Sleep(20);
-                    cpu = cpuCounter.NextValue();
-                    while (true)
+                    try
                     {
                         Thread.Sleep(1000);
                         cpu = cpuCounter.NextValue();
                     }
-                }
-                catch (Exception e)
-                {
-
-                    MessageBox.Show(e.Message);
+                    catch (Exception e)
+                    {
+                        MessageBox.Show(e.Message, "CPU", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Thread.Sleep(10000);
+                    }
                 }
             });
         }
@@ -175,22 +174,21 @@ namespace Fancy
         {
             Task.Factory.StartNew(() =>
             {
-                try
+                ComputerInfo ci = new ComputerInfo();
+                while (true)
                 {
-                    ComputerInfo ci = new ComputerInfo();
-                    while (true)
+                    try
                     {
                         double totalRAM = ci.TotalPhysicalMemory / 1073741824.004733; ;
                         double AvailRAM = ci.AvailablePhysicalMemory / 1073741824.004733;
                         ram = ((1 - (AvailRAM / totalRAM)) * 100);
                         Thread.Sleep(1000);
                     }
-
-                }
-                catch (Exception e)
-                {
-                    MessageBox.Show(e.Message);
-
+                    catch (Exception e)
+                    {
+                        MessageBox.Show(e.Message, "RAM", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Thread.Sleep(10000);
+                    }
                 }
             });
         }
@@ -233,15 +231,15 @@ namespace Fancy
                         Thread.Sleep(1000);
 
                     }
-                    catch (NetworkInformationException)
+                    catch (NetworkInformationException netError)
                     {
-                        Thread.Sleep(5000);
-                        continue;
-
+                        MessageBox.Show(netError.Message, "Network Information Exception", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Thread.Sleep(10000);
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show(e.Message, "Network");
+                        MessageBox.Show(e.Message, "Network", MessageBoxButton.OK, MessageBoxImage.Error);
+                        Thread.Sleep(10000);
                     }
                 }
             });

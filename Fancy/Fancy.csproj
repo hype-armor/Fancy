@@ -56,6 +56,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="LocateMe.cs" />
     <Compile Include="Time.cs" />
     <Compile Include="Utilities.cs" />
     <Compile Include="Weather.cs" />

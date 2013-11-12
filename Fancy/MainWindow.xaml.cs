@@ -27,7 +27,7 @@ namespace Fancy
             RAMUsage();
             NetworkUsage();
         }
-        private static string ZIP = "74115";
+        //private static string ZIP = "74115";
         private static bool Hazard = false;
         private static Weather weather = new Weather();
         private static string CurrentTime;
@@ -91,7 +91,7 @@ namespace Fancy
                 string LastHazard = "";
                 while (true)
                 {
-                    weather.ZIP = ZIP;
+                    weather.ZIP = new LocateMe().Location;
                     try
                     {
                         weather.Conditions();

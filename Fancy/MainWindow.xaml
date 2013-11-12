@@ -31,6 +31,7 @@
             <Label Content="↓ 999K" FontSize="10" Foreground="White" HorizontalContentAlignment="Center" Margin="61,140,4,-6" Name="lblIn" VerticalAlignment="Top" VerticalContentAlignment="Center" Padding="0" />
             <Label x:Name="CPUUsageDots" Content="•••••" Opacity="0.8" HorizontalContentAlignment="Center" Margin="11,102,67,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF4DBFD9" FontSize="16" Height="17" />
             <Label x:Name="RAMUsageDots" Content="•••••" Opacity="0.8" HorizontalContentAlignment="Center" Margin="66,102,0,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF4DBFD9" FontSize="16" Height="17" HorizontalAlignment="Left" Width="43" />
+            <Label Content="Freeze Warning" x:Name="lblHazard" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Margin="10,70,10,0" VerticalAlignment="Top" Foreground="White" Width="101"/>
         </Grid>
     </Border>
 </Window>

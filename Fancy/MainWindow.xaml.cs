@@ -35,6 +35,7 @@ namespace Fancy
         private float cpu;
         private double ram;
         private double up, down;
+        private object SmallHazard;
         private void PumpUIMessage()
         {
             Task.Factory.StartNew(() =>
@@ -57,6 +58,7 @@ namespace Fancy
                         lblCondition.Content += Hazard ? "!" : "";
                         lbltemperature.Content = weather.Temperature + "°F";
                         imgIcon.Source = icon;
+                        lblHazard.Content = SmallHazard;
 
                         // Computer Info
                         lblCPU.Content = cpu.ToString("F0") + "%";
@@ -95,8 +97,9 @@ namespace Fancy
                     try
                     {
                         weather.Conditions();
-                        icon = weather.GetIcon(weather.Condition);
-                        icon.Freeze();
+                        BitmapImage tempImage = weather.GetIcon(weather.Condition);
+                        tempImage.Freeze();
+                        icon = tempImage;
                         string Hazards = weather.GetHazards();
                         Hazard = false;
                         if (Hazards != "There are no active watches, warnings or advisories" &&
@@ -104,7 +107,10 @@ namespace Fancy
                         {
                             Hazard = true;
                             LastHazard = Hazards;
-                            MessageBox.Show(Hazards, "Hazards", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            int firstSpace = Hazards.IndexOf(' ');
+                            int secondSpace = Hazards.IndexOf(' ', firstSpace +1);
+                            SmallHazard = Hazards.Substring(0, secondSpace);
+                            //MessageBox.Show(words, "Hazards", MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
 
                         Thread.Sleep(900000);

@@ -1,10 +1,12 @@
 ﻿using Microsoft.VisualBasic.Devices;
 using System;
 using System.Diagnostics;
+using System.Drawing;
 using System.Net.NetworkInformation;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
@@ -16,17 +18,31 @@ namespace Fancy
     /// </summary>
     public partial class MainWindow : Window
     {
+        private NotifyIcon notifyIcon = new NotifyIcon();
+        
         public MainWindow()
         {
             InitializeComponent();
 
-            PumpUIMessage();
-            Weather();
-            Time();
-            CPUUsage();
-            RAMUsage();
-            NetworkUsage();
+            notifyIcon.Visible = true;
+            notifyIcon.Icon = SystemIcons.Asterisk;
+            notifyIcon.MouseClick += notifyIcon_MouseClick;
+            notifyIcon.Text = "Fancy";
+            notifyIcon.BalloonTipTitle = "Fancy";
+            notifyIcon.BalloonTipText = "Nothing to see here. Move along.";
+
+            Task.Factory.StartNew(() =>
+            {
+                PumpUIMessage();
+                Weather();
+                Time();
+                CPUUsage();
+                RAMUsage();
+                NetworkUsage();
+            });
+           
         }
+
         //private static string ZIP = "74115";
         private static bool Hazard = false;
         private static Weather weather = new Weather();
@@ -35,7 +51,6 @@ namespace Fancy
         private float cpu;
         private double ram;
         private double up, down;
-        private object SmallHazard;
         private void PumpUIMessage()
         {
             Task.Factory.StartNew(() =>
@@ -58,7 +73,7 @@ namespace Fancy
                         lblCondition.Content += Hazard ? "!" : "";
                         lbltemperature.Content = weather.Temperature + "°F";
                         imgIcon.Source = icon;
-                        lblHazard.Content = SmallHazard;
+                        
 
                         // Computer Info
                         lblCPU.Content = cpu.ToString("F0") + "%";
@@ -97,9 +112,7 @@ namespace Fancy
                     try
                     {
                         weather.Conditions();
-                        BitmapImage tempImage = weather.GetIcon(weather.Condition);
-                        tempImage.Freeze();
-                        icon = tempImage;
+                        
                         string Hazards = weather.GetHazards();
                         Hazard = false;
                         if (Hazards != "There are no active watches, warnings or advisories" &&
@@ -109,15 +122,18 @@ namespace Fancy
                             LastHazard = Hazards;
                             int firstSpace = Hazards.IndexOf(' ');
                             int secondSpace = Hazards.IndexOf(' ', firstSpace +1);
-                            SmallHazard = Hazards.Substring(0, secondSpace);
-                            //MessageBox.Show(words, "Hazards", MessageBoxButton.OK, MessageBoxImage.Warning);
+                            ShowBalloon("Weather Report", Hazards);
                         }
+
+                        BitmapImage tempImage = weather.GetIcon(weather.Condition);
+                        tempImage.Freeze();
+                        icon = tempImage;
 
                         Thread.Sleep(900000);
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show(e.Message, "Weather", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ShowBalloon("Weather", e);
                         Thread.Sleep(10000);
                     }
                 }
@@ -142,7 +158,7 @@ namespace Fancy
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show(e.Message, "Time", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ShowBalloon("Time", e);
                         Thread.Sleep(10000);
                     }
                 }
@@ -169,7 +185,7 @@ namespace Fancy
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show(e.Message, "CPU", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ShowBalloon("CPU", e);
                         Thread.Sleep(10000);
                     }
                 }
@@ -192,7 +208,7 @@ namespace Fancy
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show(e.Message, "RAM", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ShowBalloon("RAM", e);
                         Thread.Sleep(10000);
                     }
                 }
@@ -239,16 +255,42 @@ namespace Fancy
                     }
                     catch (NetworkInformationException netError)
                     {
-                        MessageBox.Show(netError.Message, "Network Information Exception", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ShowBalloon("Network Information Exception", netError);
                         Thread.Sleep(10000);
                     }
                     catch (Exception e)
                     {
-                        MessageBox.Show(e.Message, "Network", MessageBoxButton.OK, MessageBoxImage.Error);
+                        ShowBalloon("Network", e);
                         Thread.Sleep(10000);
                     }
                 }
             });
+        }
+
+        void notifyIcon_MouseClick(object sender, System.Windows.Forms.MouseEventArgs e)
+        {
+            if (!notifyIcon.Visible)
+            {
+                notifyIcon.ShowBalloonTip(4000);
+            }
+            else
+            {
+                notifyIcon.ShowBalloonTip(0);
+            }
+        }
+
+        private void ShowBalloon(string Title, Exception e)
+        {
+            notifyIcon.BalloonTipTitle = Title;
+            notifyIcon.BalloonTipText = e.Message;
+            notifyIcon.ShowBalloonTip(4000);
+        }
+
+        private void ShowBalloon(string Title, string Message)
+        {
+            notifyIcon.BalloonTipTitle = Title;
+            notifyIcon.BalloonTipText = Message;
+            notifyIcon.ShowBalloonTip(4000);
         }
 
         private void grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
@@ -258,6 +300,8 @@ namespace Fancy
 
         private void window_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
+            notifyIcon.Visible = false;
+            notifyIcon.Dispose();
             Environment.Exit(0);
         }
 

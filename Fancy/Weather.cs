@@ -15,8 +15,20 @@ class Weather
 	public string ZIP { get; set; }
 	public string Temperature = "0";
 	public string Condition = "Loading...";
+
+    public void Wunderground()
+    {
+        XmlDocument WUnderWeather = new XmlDocument();
+        WUnderWeather.Load("http://api.wunderground.com/api/c0a06bca9f1999b7/conditions/q/" + ZIP + ".xml");
+        XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(WUnderWeather.NameTable);
+        XmlNode WeatherNode = WUnderWeather.SelectNodes("/response/current_observation/weather", NameSpaceMgr)[0];
+
+        string Condition = WeatherNode.InnerText;
+    }
+
 	public void Conditions()
 	{
+        Wunderground();
 		string SavedLocation = "http://weather.yahooapis.com/forecastrss?z=" + ZIP;
 		// Create a new XmlDocument
 		XmlDocument Weather = new XmlDocument();
@@ -115,7 +127,7 @@ class Weather
 			try
 			{
 				XmlDocument XMLCoords = new XmlDocument();
-				XMLCoords.Load("http://query.yahooapis.com/v1/public/yql?q=select%20centroid%20from%20geo.places%20where%20text%3D%22" + ZIP + "%22");
+				XMLCoords.Load("http://query.yahooapis.com/v1/public/yql?q=select%20centroid%20from%20geo.places%20where%20text%3D\"" + ZIP + "\"");
 
 				// Get forecast with XPath
 				XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(XMLCoords.NameTable);
@@ -138,27 +150,18 @@ class Weather
 
 	public BitmapImage GetIcon(string condition)
 	{
-
-		try
-		{
-			condition = CleanCondition(condition).ToLower();
-			using (WebClient wc = new WebClient())
-			{
-				byte[] WebPage = wc.DownloadData("https://ssl.gstatic.com/onebox/weather/64/" + condition + ".png");
-				return toBitmap(byteArrayToImage(WebPage));
-			}
-		}
-		catch (WebException e)
-		{
-            MessageBox.Show(e.Message, "GetIcon", MessageBoxButton.OK, MessageBoxImage.Error);
-			return null;
-		} 
-
+	    condition = CleanCondition(condition).ToLower();
+	    using (WebClient wc = new WebClient())
+	    {
+		    byte[] WebPage = wc.DownloadData("https://ssl.gstatic.com/onebox/weather/64/" + condition + ".png");
+		    return toBitmap(byteArrayToImage(WebPage));
+	    }
 	}
 
 	private static string CleanCondition(string condition)
 	{
 		condition = condition.Replace(' ', '_');
+        condition = condition.Contains("Fair") ? "sunny" : condition;
         condition = condition.Contains("Drizz") || condition.Contains("Showers") ? "rain" : condition;
 		condition = condition.Contains("Mostly") ? condition.Replace("Mostly", "Partly") : condition;
 		condition = condition.Contains("/") ? condition.Split(new char[] { '/' })[1] : condition;

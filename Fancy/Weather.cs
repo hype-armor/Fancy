@@ -18,7 +18,7 @@ class Weather
     public BitmapImage Icon;
     public string Hazard { get; set; }
     public string iconURL = "";
-    private readonly string APIKEY = "c0a06bca9f1999b";
+    private readonly string APIKEY = "c0a06bca9f1999b7";
 
     public void Wunderground()
     {
@@ -31,7 +31,7 @@ class Weather
 
         Condition = WeatherNode.InnerText;
         Temperature = TempNode.InnerText.ToDecimal().ToString("###");
-        GetIcon(IconNode.InnerText.Replace("/i/c/k/", "/i/c/i/"));
+        //GetIcon(IconNode.InnerText.Replace("/i/c/k/", "/i/c/i/"));
         iconURL = IconNode.InnerText.Replace("/i/c/k/", "/i/c/i/");
 
         WUnderWeather.Load("http://api.wunderground.com/api/" + APIKEY + "/alerts/q/" + ZIP + ".xml");

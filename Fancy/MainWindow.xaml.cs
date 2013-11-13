@@ -61,7 +61,7 @@ namespace Fancy
                     DateTime CurrentDateTime = DateTime.Now;
                     Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                     {
-                        Border1.Height = 149.0;
+                        Border1.Height = 133.0;
                         Border1.Width = 119.0;
                         lblDayName.Content = CurrentDateTime.ToString("ddd");
                         lblDayNum.Content = CurrentDateTime.Day.ToString("0#");

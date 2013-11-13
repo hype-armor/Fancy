@@ -44,7 +44,7 @@ namespace Fancy
         }
 
         //private static string ZIP = "74115";
-        private static bool Hazard = false;
+        private static bool IsHazard = false;
         private static Weather weather = new Weather();
         private static string CurrentTime;
         private BitmapImage icon;
@@ -61,7 +61,7 @@ namespace Fancy
                     DateTime CurrentDateTime = DateTime.Now;
                     Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                     {
-                        Border1.Height = 160.0;
+                        Border1.Height = 149.0;
                         Border1.Width = 119.0;
                         lblDayName.Content = CurrentDateTime.ToString("ddd");
                         lblDayNum.Content = CurrentDateTime.Day.ToString("0#");
@@ -70,10 +70,13 @@ namespace Fancy
 
                         // Weather
                         lblCondition.Content = weather.Condition;
-                        lblCondition.Content += Hazard ? "!" : "";
+                        lblCondition.Content += IsHazard ? "!" : "";
                         lbltemperature.Content = weather.Temperature + "°F";
-                        imgIcon.Source = icon;
-                        
+                        //imgIcon.Source = icon;
+                        if (!string.IsNullOrEmpty(weather.iconURL))
+                        {
+                            imgIcon.Source = new BitmapImage(new Uri(weather.iconURL));
+                        }
 
                         // Computer Info
                         lblCPU.Content = cpu.ToString("F0") + "%";
@@ -111,23 +114,24 @@ namespace Fancy
                     weather.ZIP = new LocateMe().Location;
                     try
                     {
-                        weather.Conditions();
-                        
-                        string Hazards = weather.GetHazards();
-                        Hazard = false;
-                        if (Hazards != "There are no active watches, warnings or advisories" &&
-                            Hazards != LastHazard)
+                        weather.Wunderground();
+
+                        string Hazard = weather.Hazard;
+                        IsHazard = false;
+                        if (Hazard != "There are no active watches, warnings or advisories" &&
+                            Hazard != LastHazard)
                         {
-                            Hazard = true;
-                            LastHazard = Hazards;
-                            int firstSpace = Hazards.IndexOf(' ');
-                            int secondSpace = Hazards.IndexOf(' ', firstSpace +1);
-                            ShowBalloon("Weather Report", Hazards);
+                            IsHazard = true;
+                            LastHazard = Hazard;
+                            int firstSpace = Hazard.IndexOf(' ');
+                            int secondSpace = Hazard.IndexOf(' ', firstSpace +1);
+                            ShowBalloon("Weather Report", Hazard);
                         }
 
-                        BitmapImage tempImage = weather.GetIcon(weather.Condition);
-                        tempImage.Freeze();
-                        icon = tempImage;
+                        
+                        //BitmapImage tempImage = weather.Icon;
+                        //tempImage.Freeze();
+                        //icon = tempImage;
 
                         Thread.Sleep(900000);
                     }
@@ -301,7 +305,6 @@ namespace Fancy
         private void window_MouseRightButtonUp(object sender, MouseButtonEventArgs e)
         {
             notifyIcon.Visible = false;
-            notifyIcon.Dispose();
             Environment.Exit(0);
         }
 

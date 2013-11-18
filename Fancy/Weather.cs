@@ -35,13 +35,19 @@ class Weather
         iconURL = IconNode.InnerText.Replace("/i/c/k/", "/i/c/i/");
 
         WUnderWeather.Load("http://api.wunderground.com/api/" + APIKEY + "/alerts/q/" + ZIP + ".xml");
-        XmlNode HazardsNode = WUnderWeather.SelectNodes("/response/alerts/alert/description", NameSpaceMgr)[0];
-        XmlNode HazardStartNode = WUnderWeather.SelectNodes("/response/alerts/alert/date", NameSpaceMgr)[0];
-        XmlNode HazardExpiresNode = WUnderWeather.SelectNodes("/response/alerts/alert/expires", NameSpaceMgr)[0];
-        
-        string NewLine = Environment.NewLine;
-        Hazard = HazardsNode.InnerText + NewLine + "From: " + HazardStartNode.InnerText + NewLine + "Until: " + HazardExpiresNode.InnerText;
+        if (!string.IsNullOrEmpty(WUnderWeather.SelectNodes("/response/alerts", NameSpaceMgr)[0].InnerText))
+        {
+            XmlNode HazardsNode = WUnderWeather.SelectNodes("/response/alerts/alert/description", NameSpaceMgr)[0];
+            XmlNode HazardStartNode = WUnderWeather.SelectNodes("/response/alerts/alert/date", NameSpaceMgr)[0];
+            XmlNode HazardExpiresNode = WUnderWeather.SelectNodes("/response/alerts/alert/expires", NameSpaceMgr)[0];
 
+            string NewLine = Environment.NewLine;
+            Hazard = HazardsNode.InnerText + NewLine + "From: " + HazardStartNode.InnerText + NewLine + "Until: " + HazardExpiresNode.InnerText;
+        }
+        else
+        {
+            Hazard = "";
+        }
     }
 
 	private void GetIcon(string url)

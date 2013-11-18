@@ -118,7 +118,7 @@ namespace Fancy
 
                         string Hazard = weather.Hazard;
                         IsHazard = false;
-                        if (Hazard != "There are no active watches, warnings or advisories" &&
+                        if (Hazard != "" &&
                             Hazard != LastHazard)
                         {
                             IsHazard = true;

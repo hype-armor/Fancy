@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualBasic.Devices;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.Net.NetworkInformation;
@@ -108,10 +109,12 @@ namespace Fancy
         {
             Task.Factory.StartNew(() =>
             {
+                List<string> LocationData = new LocateMe().Location;
+                weather.ZIP = LocationData[LocationData.Count - 1];
+
                 string LastHazard = "";
                 while (true)
                 {
-                    weather.ZIP = new LocateMe().Location;
                     try
                     {
                         weather.Wunderground();

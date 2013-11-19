@@ -1,59 +1,50 @@
 ﻿using System.Net;
 using System.Text;
 using System;
+using System.Collections.Generic;
+using System.Threading;
 
 class LocateMe
 {
-		
-	public string Location { get { return Locate(); } }
 
-	private string Locate()
-	{
-		//State();
-		using (WebClient Client = new WebClient())
-		{
-			string[] html = Client.DownloadString("https://duckduckgo.com/?q=whats+my+ip")
-			    .Split(new char[] { '>', '<', '/', '"', '=' }, StringSplitOptions.RemoveEmptyEntries);
-			for (int i = 0; i < html.Length; i++)
-			{
+    public List<string> Location { get { return Locate(); } }
 
-				if (html[i].Contains("Your IP address is"))
-				{
-					string[] rar = html[i + 6].Split(new char[] { ',', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+    private List<string> Locate()
+    {
+        while (true)
+        {
+            try
+            {
+                using (WebClient Client = new WebClient())
+                {
+                    string WebPage = Client.DownloadString("https://duckduckgo.com/?q=whats+my+ip");
+                    string[] html = WebPage
+                        .Split(new char[] { '>', '<', '"', '=', ',', ' ', '(', ')' }, StringSplitOptions.RemoveEmptyEntries);
 
-                    return ZIP(rar[0], rar[1].Substring(0, 2)); //html[i + 6]; // returns "City, State, Country"
-				}
-			}
-		}
-		return null;
-	}
+                    for (int i = 0; i < html.Length; i++)
+                    {
+                        if (html[i].Contains("http://open.mapquest.com/?q"))
+                        {
+                            i++;
+                            List<string> rar = new List<string>();
 
-	private string ZIP(string City, string State)
-	{
-		//http://zipcode.org/city/OK/TULSA
+                            while (!html[i].Contains("/a"))
+                            {
+                                rar.Add(html[i++]);
+                            }
 
-		//WebClient Client = new WebClient();
-		using (WebClient Client = new WebClient())
-		{
-            string[] html = Client.DownloadString("http://zipcode.org/city/" + State + "/" + City)
-			    .Split(new char[] { '>', '<', '/', '"', '=' }, StringSplitOptions.RemoveEmptyEntries);
-			for (int i = 0; i < html.Length; i++)
-			{
-
-				if (html[i].Contains("Area Code"))
-				{
-					for (i = 800; i < html.Length; i++)
-					{
-
-						if (html[i].Contains("a href"))
-						{
-							return html[i+1]; // returns a zip for the area.
-						}
-					}
-				}
-			}
-		}
-		return null;
-	}
+                            return rar;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Thread.Sleep(60000);
+            }
+            return null;
+        }
+        
+    }
 }
 

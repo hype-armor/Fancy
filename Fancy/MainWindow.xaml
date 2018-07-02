@@ -2,10 +2,10 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="Fancy" Height="169.821" Width="125.795" Name="window" ShowInTaskbar="False" ResizeMode="NoResize" WindowStyle="None" WindowStartupLocation="CenterOwner" 
-		AllowsTransparency="True" Opacity="1" Background="{x:Null}" Foreground="{x:Null}" MouseRightButtonUp="window_MouseRightButtonUp"
+		AllowsTransparency="True" Opacity="1" Background="{x:Null}" Foreground="{x:Null}" MouseRightButtonUp="Window_MouseRightButtonUp"
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
     <Border Name="Border1" BorderBrush="{x:Null}" BorderThickness="0" CornerRadius="6" Background="#87000000" Width="124" HorizontalAlignment="Left" VerticalAlignment="Top" Height="168" Margin="1,0,0,0">
-        <Grid Name="grid" Opacity="1" Background="{x:Null}" MouseLeftButtonDown="grid_MouseLeftButtonDown" VerticalAlignment="Top" HorizontalAlignment="Left">
+        <Grid Name="grid" Opacity="1" Background="{x:Null}" MouseLeftButtonDown="Grid_MouseLeftButtonDown" VerticalAlignment="Top" HorizontalAlignment="Left">
             <Image HorizontalAlignment="Left" Margin="29,55,0,0" Name="imgIcon" Stretch="Fill" Width="64" Opacity="0.5" Source="https://ssl.gstatic.com/onebox/weather/64/sunny.png" Height="64" VerticalAlignment="Top" FlowDirection="LeftToRight" />
             <Label Content="Wed" Height="28" HorizontalAlignment="Left" Margin="5,4,0,0" Name="lblDayName" VerticalAlignment="Top" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0" Width="40" FontWeight="Normal" Foreground="White" />
             <Label Content="01" Height="32" HorizontalAlignment="Left" Margin="38,-1,0,0" Name="lblDayNum" VerticalAlignment="Top" Width="43" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="24" Padding="0" FontWeight="Bold" Foreground="White" />

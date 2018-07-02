@@ -22,48 +22,12 @@ class Weather
         WUnderWeather.Load("http://api.wunderground.com/api/c0a06bca9f1999b7/conditions/q/" + ZIP + ".xml");
         XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(WUnderWeather.NameTable);
         XmlNode WeatherNode = WUnderWeather.SelectNodes("/response/current_observation/weather", NameSpaceMgr)[0];
+        XmlNode temperature = WUnderWeather.SelectNodes("/response/current_observation/temperature_string", NameSpaceMgr)[0];
+        //temperature_string
 
-        string Condition = WeatherNode.InnerText;
+        Condition = WeatherNode.InnerText;
+        Temperature = temperature.InnerText;
     }
-
-	public void Conditions()
-	{
-        Wunderground();
-		string SavedLocation = "http://weather.yahooapis.com/forecastrss?z=" + ZIP;
-		// Create a new XmlDocument
-		XmlDocument Weather = new XmlDocument();
-		string rss = "http://xml.weather.yahoo.com/ns/rss/1.0";
-		string NewLine = Environment.NewLine;
-		while (true)
-		{
-			try
-			{
-				// Load data
-				Weather.Load(SavedLocation);
-
-				// Set up namespace manager for XPath
-				XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(Weather.NameTable);
-
-				NameSpaceMgr.AddNamespace("yweather", rss);
-
-				// Get forecast with XPath
-				XmlNodeList condition = Weather.SelectNodes("/rss/channel/item/yweather:condition", NameSpaceMgr);
-				XmlNodeList location = Weather.SelectNodes("/rss/channel/yweather:location", NameSpaceMgr);
-				XmlNodeList forecast = Weather.SelectNodes("/rss/channel/item/yweather:forecast", NameSpaceMgr);
-
-				Condition = CleanCondition(condition[0].Attributes["text"].Value);
-				Temperature = condition[0].Attributes["temp"].Value;
-				break;
-			}
-			catch
-			{
-				// Try again.
-				Thread.Sleep(5000);
-				continue;
-			}
-				
-		}
-	}
 
 	public string GetHazards()
 	{

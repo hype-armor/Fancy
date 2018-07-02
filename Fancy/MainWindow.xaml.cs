@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualBasic.Devices;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
 using System.Threading;
@@ -27,11 +28,23 @@ namespace Fancy
             _timer = new System.Timers.Timer(1000);
             _timer.Elapsed += new ElapsedEventHandler(_timer_Elapsed);
             _timer.Enabled = true;
+
+            stopwatch.Start();
         }
 
         private void _timer_Elapsed(object sender, ElapsedEventArgs e)
         {
+            if (Debugger.IsAttached)
+            {
+                _timer.Enabled = false;
+            }
+
             PumpUIMessage();
+
+            if (Debugger.IsAttached)
+            {
+                _timer.Enabled = true;
+            }
         }
 
         static System.Timers.Timer _timer;
@@ -43,12 +56,16 @@ namespace Fancy
         private ComputerInfo ci = new ComputerInfo();
         private PerformanceCounter cpuCounter = new PerformanceCounter();
         private NetworkInterface ni = NetworkInterface.GetAllNetworkInterfaces()[5];
+        private Stopwatch stopwatch = new Stopwatch();
+        private Dictionary<string, TimeSpan> keyValuePairs = new Dictionary<string, TimeSpan>();
 
         private void PumpUIMessage()
         {
             CPUUsage();
             RAMUsage();
             NetworkUsage();
+            Weather();
+
             DateTime CurrentDateTime = DateTime.Now;
             Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
             {
@@ -98,9 +115,18 @@ namespace Fancy
             ram = ((1 - (AvailRAM / totalRAM)) * 100);
         }
 
-        
         private void NetworkUsage()
         {
+            if (!keyValuePairs.ContainsKey("NetworkUsage"))
+            {
+                keyValuePairs.Add("NetworkUsage", stopwatch.Elapsed); 
+            }
+
+            if ((stopwatch.ElapsedMilliseconds - keyValuePairs["NetworkUsage"].TotalMilliseconds) < 1000)
+            {
+                return;
+            }
+
             double upNew = (ni.GetIPv4Statistics().BytesSent / 131072.0);
             double upLoadTotal = upNew - upOld;
 
@@ -110,8 +136,28 @@ namespace Fancy
             upOld = upNew;
             downOld = downNew;
 
-            up = upLoadTotal;
-            down = downLoadTotal;
+            up = upLoadTotal * (1000 / (stopwatch.ElapsedMilliseconds - keyValuePairs["NetworkUsage"].TotalMilliseconds));
+            down = downLoadTotal * (1000 / (stopwatch.ElapsedMilliseconds - keyValuePairs["NetworkUsage"].TotalMilliseconds));
+
+            keyValuePairs["NetworkUsage"] = stopwatch.Elapsed;
+        }
+
+        private void Weather()
+        {
+            if (!keyValuePairs.ContainsKey("Weather"))
+            {
+                keyValuePairs.Add("Weather", stopwatch.Elapsed);
+            }
+
+            if ((stopwatch.ElapsedMilliseconds - keyValuePairs["Weather"].TotalMilliseconds) < 5000)
+            {
+                return;
+            }
+
+            keyValuePairs["Weather"] = stopwatch.Elapsed;
+            weather.ZIP = "74037";
+            weather.Wunderground();
+            
         }
 
         private void Grid_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)

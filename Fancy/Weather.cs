@@ -18,15 +18,23 @@ class Weather
 
     public void Wunderground()
     {
-        XmlDocument WUnderWeather = new XmlDocument();
-        WUnderWeather.Load("http://api.wunderground.com/api/c0a06bca9f1999b7/conditions/q/" + ZIP + ".xml");
-        XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(WUnderWeather.NameTable);
-        XmlNode WeatherNode = WUnderWeather.SelectNodes("/response/current_observation/weather", NameSpaceMgr)[0];
-        XmlNode temperature = WUnderWeather.SelectNodes("/response/current_observation/temperature_string", NameSpaceMgr)[0];
-        //temperature_string
+        try
+        {
+            XmlDocument WUnderWeather = new XmlDocument();
+            WUnderWeather.Load("http://api.wunderground.com/api/c0a06bca9f1999b7/conditions/q/" + ZIP + ".xml");
+            XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(WUnderWeather.NameTable);
+            XmlNode WeatherNode = WUnderWeather.SelectNodes("/response/current_observation/weather", NameSpaceMgr)[0];
+            XmlNode temperature = WUnderWeather.SelectNodes("/response/current_observation/temperature_string", NameSpaceMgr)[0];
+            //temperature_string
 
-        Condition = WeatherNode.InnerText;
-        Temperature = temperature.InnerText;
+            Condition = WeatherNode.InnerText;
+            Temperature = temperature.InnerText;
+        }
+        catch (System.Net.WebException)
+        {
+            Condition = "??";
+            Temperature = "??";
+        }
     }
 
 	public string GetHazards()

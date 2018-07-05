@@ -6,7 +6,6 @@
 		xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006">
     <Border Name="Border1" BorderBrush="{x:Null}" BorderThickness="0" CornerRadius="6" Background="#87000000" Width="124" HorizontalAlignment="Left" VerticalAlignment="Top" Height="168" Margin="1,0,0,0">
         <Grid Name="grid" Opacity="1" Background="{x:Null}" MouseLeftButtonDown="Grid_MouseLeftButtonDown" VerticalAlignment="Top" HorizontalAlignment="Left">
-            <Image HorizontalAlignment="Left" Margin="29,55,0,0" Name="imgIcon" Stretch="Fill" Width="64" Opacity="0.5" Source="https://ssl.gstatic.com/onebox/weather/64/sunny.png" Height="64" VerticalAlignment="Top" FlowDirection="LeftToRight" />
             <Label Content="Wed" Height="28" HorizontalAlignment="Left" Margin="5,4,0,0" Name="lblDayName" VerticalAlignment="Top" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0" Width="40" FontWeight="Normal" Foreground="White" />
             <Label Content="01" Height="32" HorizontalAlignment="Left" Margin="38,-1,0,0" Name="lblDayNum" VerticalAlignment="Top" Width="43" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" FontSize="24" Padding="0" FontWeight="Bold" Foreground="White" />
             <Label Content="Nov" Height="28" HorizontalAlignment="Left" Margin="75,4,0,0" Name="lblMonthName" VerticalAlignment="Top" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0" Width="40" FontWeight="Normal" Foreground="White" />
@@ -31,6 +30,10 @@
             <Label Content="↓ 999K" FontSize="10" Foreground="White" HorizontalContentAlignment="Center" Margin="61,140,4,-6" Name="lblIn" VerticalAlignment="Top" VerticalContentAlignment="Center" Padding="0" />
             <Label x:Name="CPUUsageDots" Content="•••••" Opacity="0.8" HorizontalContentAlignment="Center" Margin="11,102,67,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF4DBFD9" FontSize="16" Height="17" />
             <Label x:Name="RAMUsageDots" Content="•••••" Opacity="0.8" HorizontalContentAlignment="Center" Margin="66,102,0,28" VerticalContentAlignment="Center" VerticalAlignment="Center" Padding="0" Foreground="#FF4DBFD9" FontSize="16" Height="17" HorizontalAlignment="Left" Width="43" />
+            <Polygon Name="polyCPU" Height="15" Width="30" Points="0,0 30,15" Margin="18,100,0,32" HorizontalAlignment="Left"/>
+            <Polygon Name="polyRAM" Height="15" Width="30" Points="0,0 30,15" Margin="73,100,0,32" HorizontalAlignment="Left"/>
+            <Polygon Name="polyNetUp" Height="15" Width="30" Points="0,0 11,1 9,2 0,3 9,4" Margin="18,150,0,32" HorizontalAlignment="Left"/>
+            <Polygon Name="polyNetDown" Height="15" Width="30" Points="0,0 30,15" Margin="73,150,0,32" HorizontalAlignment="Left"/>
         </Grid>
     </Border>
 </Window>

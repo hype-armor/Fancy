@@ -6,11 +6,154 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
-using System.Windows;
+using System.Timers;
 using System.Windows.Media.Imaging;
 using System.Xml;
 
-class Weather
+interface IWeather
+{
+    Uri Uri { get; }
+    string Zip { get; }
+    decimal Temperature { get; }
+    string Condition { get; }
+    string TemperatureXpath { get; set; }
+    string ConditionXpath { get; set; }
+
+    XmlDocument XmlDoc { get; }
+
+    void UpdateData();
+    System.Timers.Timer Timer { set; }
+    void TimerElapsed(object sender, ElapsedEventArgs e);
+}
+
+public class WeatherFactory
+{
+    public Weather Create(string service)
+    {
+        Weather weather = null;
+
+        if (service == "nws")
+        {
+            weather = new Nws();
+        }
+        else if (service == "nws2")
+        {
+            weather = new Nws2();
+        }
+
+        return weather;
+    }
+}
+
+public class Nws : Weather
+{
+    public Nws()
+    {
+        Zip = "74037";
+        Uri = new Uri("https://forecast.weather.gov/MapClick.php?lat=36.0022&lon=-95.9746&unit=0&lg=english&FcstType=dwml");
+        TemperatureXpath = "/dwml/data[2]/parameters/temperature[1]/value";
+        ConditionXpath = "/dwml/data[2]/parameters/weather/weather-conditions[1]/@weather-summary";
+        webClient = new WebClient();
+        webClient.Headers.Add("user-agent", "nws@gregsemail.us");
+    }
+}
+
+public class Nws2 : Nws
+{
+    public Nws2()
+    {
+        Header = new KeyValuePair<string, string>("user-agent", "nws@gregsemail.us");
+    }
+}
+
+
+public class Weather : IWeather
+{
+    private string _zip;
+    public string Zip { get => _zip; set => _zip = value; }
+
+    private decimal _temperature = 0;
+    public decimal Temperature => _temperature;
+
+    private string _condition;
+    public string Condition => _condition;
+
+    private Uri _uri;
+    public Uri Uri { get => _uri; set => _uri = value; }
+
+    private XmlDocument _xmlDocument = new XmlDocument();
+    public XmlDocument XmlDoc => _xmlDocument;
+
+    private string _temperatureXpath;
+    public string TemperatureXpath { get => _temperatureXpath; set => _temperatureXpath = value; }
+    private string _conditionXpath;
+    public string ConditionXpath { get => _conditionXpath; set => _conditionXpath = value; }
+
+    private WebClient _webClient;
+    public WebClient webClient { get => _webClient; set => _webClient = value; }
+
+    private System.Timers.Timer _timer;
+    public System.Timers.Timer Timer { set => _timer = value; }
+
+    private KeyValuePair<string, string> _header;
+    public KeyValuePair<string, string> Header
+    {
+        get { return _header; }
+        set { _header = value; }
+    }
+
+
+    private bool isUpdating = false;
+    
+    public void UpdateData()
+    {
+        isUpdating = true;
+        ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12;
+        try
+        {
+            _webClient.Headers.Add(Header.Key, Header.Value);
+            string xml = _webClient.DownloadString(_uri.AbsoluteUri);
+            _xmlDocument.LoadXml(xml);
+            XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(_xmlDocument.NameTable);
+            XmlNode TemperatureNode = _xmlDocument.SelectSingleNode(TemperatureXpath, NameSpaceMgr);
+            XmlNode WeatherNode = _xmlDocument.SelectSingleNode(ConditionXpath, NameSpaceMgr);
+            
+            _condition = WeatherNode.Value;
+            _temperature = TemperatureNode.InnerText.ToDecimal();
+        }
+        catch (System.Net.WebException we)
+        {
+            _condition += "?";
+            
+        }
+        catch (System.NotSupportedException nse)
+        {
+            _condition += "?";
+        }
+        isUpdating = false;
+    }
+
+    public void Start()
+    {
+        if (_timer == null)
+        {
+            _timer = new System.Timers.Timer(1000);
+            _timer.Elapsed += new ElapsedEventHandler(TimerElapsed);
+            _timer.Enabled = true;
+        }
+    }
+
+    public void TimerElapsed(object sender, ElapsedEventArgs e)
+    {
+        _timer.Interval = 1000;
+        if (isUpdating == false)
+        {
+            UpdateData();
+        }
+    }
+}
+
+class WeatherA
 {
 	public string ZIP { get; set; }
 	public string Temperature = "0";
@@ -68,7 +211,7 @@ class Weather
 		{
 			try
 			{
-				List<decimal> Coords = GetCoords();
+				List<decimal> Coords = null;
 				WebClient wc = new WebClient();
 				byte[] buffer = wc.DownloadData("http://forecast.weather.gov/MapClick.php?textField1=" + Coords[0] + "&textField2=" + Coords[1]);
 				string[] html = Encoding.UTF8.GetString(buffer, 0, buffer.Length).Split('>');
@@ -92,52 +235,13 @@ class Weather
 		}
 	}
 
-	private List<decimal> GetCoords()
-	{
-		while (true)
-		{
-			try
-			{
-				XmlDocument XMLCoords = new XmlDocument();
-				XMLCoords.Load("http://query.yahooapis.com/v1/public/yql?q=select%20centroid%20from%20geo.places%20where%20text%3D\"" + ZIP + "\"");
-
-				// Get forecast with XPath
-				XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(XMLCoords.NameTable);
-				XmlNode Nodes = XMLCoords.SelectNodes("/query/results", NameSpaceMgr)[0].ChildNodes[0].ChildNodes[0];
-				decimal latitude = Nodes.ChildNodes[0].InnerText.ToDecimal();
-				decimal longitude = Nodes.ChildNodes[1].InnerText.ToDecimal();
-				List<decimal> Coords = new List<decimal>();
-				Coords.Add(latitude);
-				Coords.Add(longitude);
-				return Coords;
-			}
-			catch
-			{
-				// Try again.
-				Thread.Sleep(5000);
-				continue;
-			} 
-		}
-	}
-
 	public BitmapImage GetIcon(string condition)
 	{
-	    condition = CleanCondition(condition).ToLower();
 	    using (WebClient wc = new WebClient())
 	    {
 		    byte[] WebPage = wc.DownloadData("https://ssl.gstatic.com/onebox/weather/64/" + condition + ".png");
 		    return toBitmap(byteArrayToImage(WebPage));
 	    }
-	}
-
-	private static string CleanCondition(string condition)
-	{
-		condition = condition.Replace(' ', '_');
-        condition = condition.Contains("Fair") ? "sunny" : condition;
-        condition = condition.Contains("Drizz") || condition.Contains("Showers") ? "rain" : condition;
-		condition = condition.Contains("Mostly") ? condition.Replace("Mostly", "Partly") : condition;
-		condition = condition.Contains("/") ? condition.Split(new char[] { '/' })[1] : condition;
-		return condition;
 	}
 
 	public Bitmap byteArrayToImage(byte[] byteArrayIn)

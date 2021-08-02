@@ -32,6 +32,11 @@ namespace Fancy
             _timer.Enabled = true;
 
             stopwatch.Start();
+
+            WeatherFactory weatherFactory = new WeatherFactory();
+            weather = weatherFactory.Create("nws2");
+            weather.Zip = "74037";
+            
         }
 
         private void _timer_Elapsed(object sender, ElapsedEventArgs e)
@@ -51,7 +56,7 @@ namespace Fancy
 
         static System.Timers.Timer _timer;
         private static bool Hazard = false;
-        private static Weather weather = new Weather();
+        private static Weather weather;
         private float cpu;
         private double ram;
         private double up, down, upOld = 0.0, downOld = 0.0;
@@ -70,7 +75,7 @@ namespace Fancy
             CPUUsage();
             RAMUsage();
             NetworkUsage();
-            Weather();
+            weather.Start();
 
             DateTime CurrentDateTime = DateTime.Now;
             Dispatcher.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
@@ -153,23 +158,6 @@ namespace Fancy
             keyValuePairs["NetworkUsage"] = stopwatch.Elapsed;
         }
 
-        private void Weather()
-        {
-            if (!keyValuePairs.ContainsKey("Weather"))
-            {
-                keyValuePairs.Add("Weather", stopwatch.Elapsed);
-            }
-
-            if ((stopwatch.ElapsedMilliseconds - keyValuePairs["Weather"].TotalMilliseconds) < 5000)
-            {
-                return;
-            }
-
-            keyValuePairs["Weather"] = stopwatch.Elapsed;
-            weather.ZIP = "74037";
-            weather.Wunderground();
-            
-        }
 
         private void UpdatePolygon(ref Polygon poly, int value, int posX, int posY, int maxHeight, int historyLength = 30)
         {

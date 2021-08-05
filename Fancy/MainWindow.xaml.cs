@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.NetworkInformation;
-using System.Threading;
 using System.Timers;
 using System.Windows;
 using System.Windows.Input;
@@ -36,7 +35,6 @@ namespace Fancy
             WeatherFactory weatherFactory = new WeatherFactory();
             weather = weatherFactory.Create("nws2");
             weather.Zip = "74037";
-            
         }
 
         private void _timer_Elapsed(object sender, ElapsedEventArgs e)

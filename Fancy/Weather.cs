@@ -18,9 +18,7 @@ interface IWeather
     string Condition { get; }
     string TemperatureXpath { get; set; }
     string ConditionXpath { get; set; }
-
     XmlDocument XmlDoc { get; }
-
     void UpdateData();
     System.Timers.Timer Timer { set; }
     void TimerElapsed(object sender, ElapsedEventArgs e);
@@ -40,7 +38,6 @@ public class WeatherFactory
         {
             weather = new Nws2();
         }
-
         return weather;
     }
 }

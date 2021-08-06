@@ -9,19 +9,18 @@ using System.Threading;
 using System.Timers;
 using System.Windows.Media.Imaging;
 using System.Xml;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 interface IWeather
 {
     Uri Uri { get; }
     string Zip { get; }
-    decimal Temperature { get; }
-    string Condition { get; }
-    string TemperatureXpath { get; set; }
-    string ConditionXpath { get; set; }
-    XmlDocument XmlDoc { get; }
     void UpdateData();
     System.Timers.Timer Timer { set; }
     void TimerElapsed(object sender, ElapsedEventArgs e);
+    Forecast forecast { get; }
+
 }
 
 public class WeatherFactory
@@ -48,10 +47,8 @@ public class Nws : Weather
     {
         Zip = "74037";
         Uri = new Uri("https://forecast.weather.gov/MapClick.php?lat=36.0022&lon=-95.9746&unit=0&lg=english&FcstType=dwml");
-        TemperatureXpath = "/dwml/data[2]/parameters/temperature[1]/value";
-        ConditionXpath = "/dwml/data[2]/parameters/weather/weather-conditions[1]/@weather-summary";
-        webClient = new WebClient();
-        webClient.Headers.Add("user-agent", "nws@gregsemail.us");
+        WebClient = new WebClient();
+        WebClient.Headers.Add("user-agent", "nws@gregsemail.us");
     }
 }
 
@@ -59,7 +56,77 @@ public class Nws2 : Nws
 {
     public Nws2()
     {
+        Uri = new Uri("https://api.weather.gov/gridpoints/TSA/58,74/forecast");
         Header = new KeyValuePair<string, string>("user-agent", "nws@gregsemail.us");
+    }
+}
+
+
+public class Nws3 : Nws2
+{
+    public int test = 0;
+    public event EventHandler<ChangedEventArgs> ChangeHappened;
+    protected virtual void Changed(ChangedEventArgs e)
+    {
+        ChangeHappened?.Invoke(this, e);
+
+    }
+
+    public class ChangedEventArgs : EventArgs
+    {
+        public string Name { get; set; }
+        public string Value { get; set; }
+    }
+
+    public Nws3()
+    {
+        ChangeHappened += Nws3_ChangeHappened;
+    }
+
+    private void Nws3_ChangeHappened(object sender, ChangedEventArgs e)
+    {
+        throw new NotImplementedException();
+    }
+}
+
+public class Forecast
+{
+    public int number = 0;
+    public string name = "Today";
+    public string startTime;// = "2021-08-05T17:00:00-05:00";
+    public string endTime;// = "2021-08-05T18:00:00-05:00";
+    public bool isDaytime;// = true;
+    public double temperature = 0;
+    public string temperatureUnit = "F";
+    public string temperatureTrend;// = null;
+    public string windSpeed;// = "5 mph";
+    public string windDirection;// = "S";
+    public BitmapImage weatherImage
+    {
+        get
+        { 
+            return (new WeatherImage()).GetIcon(icon); ;
+        }
+    }
+    private Uri icon;// = new Uri("https://api.weather.gov/icons/land/day/tsra_sct,60?size=medium");
+    public string shortForecast = "";
+    public string detailedForecast;// = "Showers and thunderstorms likely. Partly sunny, with a high near 86. South wind around 5 mph. Chance of precipitation is 60%. New rainfall amounts between a tenth and quarter of an inch possible.";
+
+    public Forecast(JToken json)
+    {
+        number = Int32.Parse(json["number"].ToString());
+        name = json["name"].ToString();
+        startTime = json["startTime"].ToString();
+        endTime = json["endTime"].ToString();
+        isDaytime = bool.Parse(json["isDaytime"].ToString());
+        temperature = double.Parse(json["temperature"].ToString());
+        temperatureUnit = json["temperatureUnit"].ToString();
+        temperatureTrend = json["temperatureTrend"].ToString();
+        windSpeed = json["windSpeed"].ToString();
+        windDirection = json["windDirection"].ToString();
+        icon = new Uri(json["icon"].ToString());
+        shortForecast = json["shortForecast"].ToString();
+        detailedForecast = json["detailedForecast"].ToString();
     }
 }
 
@@ -69,25 +136,11 @@ public class Weather : IWeather
     private string _zip;
     public string Zip { get => _zip; set => _zip = value; }
 
-    private decimal _temperature = 0;
-    public decimal Temperature => _temperature;
-
-    private string _condition;
-    public string Condition => _condition;
-
     private Uri _uri;
     public Uri Uri { get => _uri; set => _uri = value; }
 
-    private XmlDocument _xmlDocument = new XmlDocument();
-    public XmlDocument XmlDoc => _xmlDocument;
-
-    private string _temperatureXpath;
-    public string TemperatureXpath { get => _temperatureXpath; set => _temperatureXpath = value; }
-    private string _conditionXpath;
-    public string ConditionXpath { get => _conditionXpath; set => _conditionXpath = value; }
-
     private WebClient _webClient;
-    public WebClient webClient { get => _webClient; set => _webClient = value; }
+    public WebClient WebClient { get => _webClient; set => _webClient = value; }
 
     private System.Timers.Timer _timer;
     public System.Timers.Timer Timer { set => _timer = value; }
@@ -99,6 +152,8 @@ public class Weather : IWeather
         set { _header = value; }
     }
 
+    private Forecast _forecast;
+    public Forecast forecast { get => _forecast; }
 
     private bool isUpdating = false;
     
@@ -109,23 +164,19 @@ public class Weather : IWeather
         try
         {
             _webClient.Headers.Add(Header.Key, Header.Value);
-            string xml = _webClient.DownloadString(_uri.AbsoluteUri);
-            _xmlDocument.LoadXml(xml);
-            XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(_xmlDocument.NameTable);
-            XmlNode TemperatureNode = _xmlDocument.SelectSingleNode(TemperatureXpath, NameSpaceMgr);
-            XmlNode WeatherNode = _xmlDocument.SelectSingleNode(ConditionXpath, NameSpaceMgr);
-            
-            _condition = WeatherNode.Value;
-            _temperature = TemperatureNode.InnerText.ToDecimal();
+            string result = _webClient.DownloadString(_uri);
+            JObject o = JObject.Parse(result);
+            JToken p = o["properties"]["periods"][0];
+            _forecast = new Forecast(p);
         }
         catch (System.Net.WebException we)
         {
-            _condition += "?";
+            //_forecast.shortForecast += "?";
             
         }
         catch (System.NotSupportedException nse)
         {
-            _condition += "?";
+            //_forecast.shortForecast += "?";
         }
         isUpdating = false;
     }
@@ -150,93 +201,14 @@ public class Weather : IWeather
     }
 }
 
-class WeatherA
+public class WeatherImage
 {
-	public string ZIP { get; set; }
-	public string Temperature = "0";
-	public string Condition = "Loading...";
-
-    public void Wunderground()
-    {
-        try
-        {
-            XmlDocument WUnderWeather = new XmlDocument();
-            WUnderWeather.Load("http://api.wunderground.com/api/c0a06bca9f1999b7/conditions/q/" + ZIP + ".xml");
-            XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(WUnderWeather.NameTable);
-            XmlNode WeatherNode = WUnderWeather.SelectNodes("/response/current_observation/weather", NameSpaceMgr)[0];
-            XmlNode temperature = WUnderWeather.SelectNodes("/response/current_observation/temperature_string", NameSpaceMgr)[0];
-            //temperature_string
-
-            Condition = WeatherNode.InnerText;
-            Temperature = temperature.InnerText;
-        }
-        catch (System.Net.WebException)
-        {
-            Condition = "??";
-            Temperature = "??";
-        }
-    }
-
-	public string GetHazards()
-	{
-		while (true)
-		{
-			try
-			{
-				string SavedLocation = "http://alerts.weather.gov/cap/wwaatmget.php?x=" + GetZone() + "&y=0";
-				XmlDocument XMLWeather = new XmlDocument();
-				XMLWeather.Load(SavedLocation);
-				XmlNamespaceManager NameSpaceMgr = new XmlNamespaceManager(XMLWeather.NameTable);
-				XmlNode DocumentNode = XMLWeather.SelectNodes("/", NameSpaceMgr)[0]["feed"]["entry"]["title"];
-
-				XMLWeather = null;
-				GC.Collect();
-				return DocumentNode.InnerText;
-			}
-			catch
-			{
-				// Try again.
-				Thread.Sleep(5000);
-				continue;
-			} 
-		}
-	}
-
-	private string GetZone()
-	{
-		while (true)
-		{
-			try
-			{
-				List<decimal> Coords = null;
-				WebClient wc = new WebClient();
-				byte[] buffer = wc.DownloadData("http://forecast.weather.gov/MapClick.php?textField1=" + Coords[0] + "&textField2=" + Coords[1]);
-				string[] html = Encoding.UTF8.GetString(buffer, 0, buffer.Length).Split('>');
-
-				for (int i = 0; i < html.Length; i++)
-				{
-					if (html[i].Contains("Zone Area Forecast for"))// Tulsa County, OK
-					{
-						//<a href=\"MapClick.php?zoneid=OKZ060\"
-						string[] zone = html[i - 1].Split(new char[] { '"', '\\', '=' }, StringSplitOptions.RemoveEmptyEntries);
-						return zone[zone.Length - 1];
-					}
-				}
-			}
-			catch
-			{
-				// Try again.
-				Thread.Sleep(5000);
-				continue;
-			}
-		}
-	}
-
-	public BitmapImage GetIcon(string condition)
+	public BitmapImage GetIcon(Uri uri)
 	{
 	    using (WebClient wc = new WebClient())
 	    {
-		    byte[] WebPage = wc.DownloadData("https://ssl.gstatic.com/onebox/weather/64/" + condition + ".png");
+            wc.Headers.Add("user-agent", "nws@gregsemail.us");
+            byte[] WebPage = wc.DownloadData(uri);
 		    return toBitmap(byteArrayToImage(WebPage));
 	    }
 	}

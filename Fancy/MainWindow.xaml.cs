@@ -85,9 +85,10 @@ namespace Fancy
                 lblMonthName.Content = CurrentDateTime.ToString("MMM");
 
                 // Weather
-                lblCondition.Content = weather.Condition;
+                lblCondition.Content = weather.forecast?.shortForecast;
                 lblCondition.Content += Hazard ? "!" : "";
-                lbltemperature.Content = weather.Temperature + "°F";
+                lbltemperature.Content = weather.forecast?.temperature.ToString() + "°F";
+                icon.Source = weather.forecast?.weatherImage;
 
 
                 // Computer Info

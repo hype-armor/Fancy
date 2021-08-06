@@ -18,8 +18,8 @@
                 </Label.Background>
             </Label>
             <Label Content="100%" Margin="20,115,73,0" Name="lblCPU" VerticalAlignment="Top" Foreground="White" FontSize="10" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Padding="0,0,2,0" Height="12" />
-            
-            
+
+
             <Label Content="RAM" FontSize="10" Foreground="White" HorizontalAlignment="Right" Margin="0,125,14,0" Name="label3" VerticalAlignment="Top" Width="28" Padding="0">
                 <Label.Background>
                     <SolidColorBrush />
@@ -34,6 +34,7 @@
             <Polygon Name="polyRAM" Height="15" Width="30" Points="0,0 30,15" Margin="73,100,0,32" HorizontalAlignment="Left"/>
             <Polygon Name="polyNetUp" Height="15" Width="30" Points="0,0 11,1 9,2 0,3 9,4" Margin="18,150,0,32" HorizontalAlignment="Left"/>
             <Polygon Name="polyNetDown" Height="15" Width="30" Points="0,0 30,15" Margin="73,150,0,32" HorizontalAlignment="Left"/>
+            <Image x:Name="icon" HorizontalAlignment="Left" Height="60" Margin="30,70,0,0" VerticalAlignment="Top" Width="59"/>
         </Grid>
     </Border>
 </Window>
